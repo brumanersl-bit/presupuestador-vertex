@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Vértex · Presupuestador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F5F7F7;
+    --panel: #FFFFFF;
+    --ink: #16232A;
+    --ink-soft: #55676E;
+    --line: #DCE3E4;
+    --teal: #0E7C86;
+    --teal-deep: #0A5A62;
+    --amber: #E8871E;
+    --amber-soft: #FCEEDC;
+    --danger: #C4472A;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 96px;
+  }
+  h1,h2,h3, .num{
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  /* ---- header ---- */
+  header{
+    background: linear-gradient(135deg, var(--teal-deep), var(--teal));
+    color: white;
+    padding: 22px 18px 26px;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:160px; height:160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  header::before{
+    content:"";
+    position:absolute; right:30px; bottom:-60px;
+    width:110px; height:110px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.85; margin-bottom: 6px; font-weight:600;
+  }
+  .brand svg{width:18px; height:18px; flex-shrink:0;}
+  header h1{
+    margin:0; font-size: 24px; font-weight:700; line-height:1.25;
+    position:relative; z-index:1;
+  }
+  header p{
+    margin: 6px 0 0; font-size: 13.5px; opacity:0.85; max-width: 320px;
+    position:relative; z-index:1;
+  }
+
+  main{ padding: 16px 14px 0; max-width: 560px; margin: 0 auto; }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card h2{
+    font-size: 12.5px; text-transform: uppercase; letter-spacing:0.08em;
+    color: var(--teal-deep); margin: 0 0 12px; font-weight:700;
+    display:flex; align-items:center; gap:7px;
+  }
+  .step-dot{
+    width:18px; height:18px; border-radius:50%;
+    background: var(--teal); color:white;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; font-family:'Space Grotesk',sans-serif;
+    flex-shrink:0;
+  }
+
+  label{
+    display:block; font-size: 13px; font-weight:600; margin: 12px 0 6px;
+    color: var(--ink);
+  }
+  label:first-of-type{ margin-top:0; }
+  input[type=text], input[type=tel]{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 15px; font-family:inherit;
+    background: #FBFCFC; color: var(--ink);
+  }
+  input:focus{ outline: 2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
+
+  .opt-grid{ display:grid; gap:8px; }
+  .opt-grid.cols-2{ grid-template-columns: 1fr 1fr; }
+  .opt-grid.cols-3{ grid-template-columns: repeat(3, 1fr); }
+
+  .opt{
+    border: 1.5px solid var(--line);
+    background: #FBFCFC;
+    border-radius: 10px;
+    padding: 10px 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+    transition: border-color .12s, background .12s, color .12s;
+    line-height:1.3;
+  }
+  .opt small{ display:block; font-weight:500; font-size:11px; opacity:0.75; margin-top:2px;}
+  .opt.active{
+    border-color: var(--teal);
+    background: var(--teal);
+    color: white;
+  }
+  .opt.active small{ opacity:0.9; }
+  .opt.amber.active{ background: var(--amber); border-color: var(--amber); }
+
+  select{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 15px; font-family:inherit;
+    background: #FBFCFC; color: var(--ink); appearance:none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355676E' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;
+  }
+
+  textarea{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 14.5px; font-family: inherit;
+    background: #FBFCFC; color: var(--ink); resize: vertical; min-height: 60px;
+  }
+
+  .hint{ font-size:12px; color:var(--ink-soft); margin-top:5px; }
+
+  /* ---- summary card ---- */
+  .summary-card{
+    background: var(--ink);
+    color: white;
+    border-radius: var(--radius);
+    padding: 18px 16px;
+  }
+  .summary-card h2{ color: rgba(255,255,255,0.6); }
+  .line-item{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
+  }
+  .line-item span:last-child{ font-family:'Space Grotesk',sans-serif; font-weight:600; }
+  .line-item.empty{ color: rgba(255,255,255,0.35); font-style: italic; }
+  .total-row{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-top: 14px; padding-top: 12px; border-top: 1.5px solid rgba(255,255,255,0.2);
+  }
+  .total-row .label{ font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color: rgba(255,255,255,0.6); font-weight:600;}
+  .total-row .num{ font-size: 30px; font-weight:700; }
+  .total-sub{ font-size:11.5px; color: rgba(255,255,255,0.45); margin-top:2px; }
+
+  .actions{ display:flex; gap:10px; margin-top: 16px; }
+  .btn{
+    flex:1; border:none; border-radius: 10px; padding: 13px 10px;
+    font-size: 14px; font-weight:700; font-family:'Inter',sans-serif;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    cursor:pointer; transition: transform .1s, opacity .1s;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn svg{ width:16px; height:16px; }
+  .btn-whatsapp{ background:#25D366; color:#0B2E1B; }
+  .btn-email{ background: rgba(255,255,255,0.12); color:white; border: 1px solid rgba(255,255,255,0.25); }
+  .btn-copy{ background: transparent; color: rgba(255,255,255,0.55); font-size:12.5px; font-weight:600; padding: 8px; }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  /* ---- sticky live total ---- */
+  .sticky-bar{
+    position: fixed; bottom:0; left:0; right:0;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+  }
+  .sticky-bar .label{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+  .sticky-bar .num{ font-size:20px; font-weight:700; color: var(--teal-deep); }
+
+  footer{ text-align:center; padding: 18px 16px 8px; font-size:11px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+    Grupo Vértex
+  </div>
+  <h1>Presupuesto en 60 segundos</h1>
+  <p>Rellena los datos in situ y envíalo al cliente al momento.</p>
+</header>
+
+<main>
+
+  <div class="card">
+    <h2><span class="step-dot">1</span> Datos del cliente</h2>
+    <label for="cliente">Nombre del cliente</label>
+    <input type="text" id="cliente" placeholder="Ej. Familia Ortega">
+    <label for="direccion">Dirección / zona (opcional)</label>
+    <input type="text" id="direccion" placeholder="Ej. C/ Mayor 12, Picassent">
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">2</span> Tipo de instalación</h2>
+    <div class="opt-grid cols-3" id="tipoInstalacion">
+      <div class="opt" data-value="split">Split individual</div>
+      <div class="opt" data-value="multisplit">Varios splits</div>
+      <div class="opt" data-value="conductos">Conductos</div>
+    </div>
+  </div>
+
+  <div class="card" id="cardCantidad" style="display:none;">
+    <h2><span class="step-dot">3</span> Cantidad de habitaciones</h2>
+    <select id="cantidad">
+      <option value="">Selecciona una opción</option>
+      <option value="2">2 habitaciones</option>
+      <option value="3">3 habitaciones</option>
+      <option value="4">4 habitaciones</option>
+      <option value="5">5 habitaciones</option>
+      <option value="6">6 habitaciones</option>
+    </select>
+  </div>
+
+  <div class="card" id="cardConfigCompresor" style="display:none;">
+    <h2><span class="step-dot">4</span> Configuración de compresor</h2>
+    <div class="opt-grid cols-3" id="configCompresor">
+      <div class="opt" data-value="2x1">2x1</div>
+      <div class="opt" data-value="3x1">3x1</div>
+      <div class="opt" data-value="independiente">Cada split<br><small>su propio compresor</small></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardTamano">
+    <h2><span class="step-dot">5</span> Tamaño / capacidad</h2>
+    <select id="tamano"><option value="">Selecciona el tipo de instalación primero</option></select>
+    <div class="hint" id="tamanoHint"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">6</span> Gama del equipo</h2>
+    <div class="opt-grid cols-3" id="gama">
+      <div class="opt" data-value="economica">Económica</div>
+      <div class="opt" data-value="estandar">Estándar</div>
+      <div class="opt amber" data-value="premium">Premium</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">7</span> Dificultad de instalación</h2>
+    <div class="opt-grid cols-3" id="dificultad">
+      <div class="opt" data-value="facil">Fácil<br><small>&lt;5 m tubería</small></div>
+      <div class="opt" data-value="balcon">Balcón<br><small>5-8 m</small></div>
+      <div class="opt" data-value="azotea">Azotea<br><small>&gt;25 m</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">8</span> Desinstalación de equipo(s) antiguo(s)</h2>
+    <div class="opt-grid cols-2" id="desinstalacion">
+      <div class="opt" data-value="no">No</div>
+      <div class="opt" data-value="si">Sí</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">9</span> Notas para el cliente (opcional)</h2>
+    <textarea id="notas" placeholder="Ej. Plazo de instalación: 3-5 días."></textarea>
+  </div>
+
+  <div class="summary-card">
+    <h2>Resumen del presupuesto</h2>
+    <div id="lineItems">
+      <div class="line-item empty"><span>Completa los pasos anteriores</span><span>—</span></div>
+    </div>
+    <div class="total-row">
+      <div>
+        <div class="label">Total con IVA</div>
+        <div class="total-sub" id="totalSinIva">Base: — · IVA (21%): —</div>
+      </div>
+      <div class="num" id="totalConIva">0 €</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-whatsapp" id="btnWhatsapp" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.06-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.77 1.24-.45.06-1.02.09-1.65-.1-.38-.12-.87-.28-1.5-.55-2.63-1.14-4.35-3.8-4.48-3.98-.13-.18-1.07-1.42-1.07-2.71 0-1.29.68-1.92.92-2.18.24-.26.53-.32.7-.32h.5c.16 0 .38-.03.58.44.22.53.75 1.83.82 1.97.07.14.11.3.02.48-.09.18-.14.29-.27.45-.14.16-.29.36-.41.48-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.57.74 1.83.87.27.14.45.2.51.32.07.12.07.66-.15 1.28z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn btn-email" id="btnEmail" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+        Email
+      </button>
+    </div>
+    <button class="btn btn-copy" id="btnCopy" disabled style="width:100%; margin-top:6px;">Copiar texto del presupuesto</button>
+  </div>
+
+</main>
+
+<div class="sticky-bar">
+  <span class="label">Total estimado</span>
+  <span class="num" id="stickyTotal">0 €</span>
+</div>
+
+<footer>Tarifas internas Grupo Vértex · Precios editables por el administrador</footer>
+
+<script>
+/* ============================================================
+   TARIFAS — editar aquí cuando cambien precios de proveedor.
+   Todos los importes en euros, SIN IVA salvo que se indique.
+   Basado en comparativas Kosner / Mitsubishi / Mundoclima.
+   ============================================================ */
+const TARIFAS = {
+  split: {
+    label: "Split individual",
+    tamanos: {
+      "2600-3500 frigorías (dormitorio pequeño)": {
+        economica: { equipo: 260, instalacion: 180 },
+        estandar:  { equipo: 650, instalacion: 220 },
+        premium:   { equipo: 900, instalacion: 260 }
+      },
+      "4000-5000 frigorías (dormitorio/salón mediano)": {
+        economica: { equipo: 340, instalacion: 200 },
+        estandar:  { equipo: 780, instalacion: 250 },
+        premium:   { equipo: 1050, instalacion: 290 }
+      },
+      "6000-7000 frigorías (salón grande)": {
+        economica: { equipo: 430, instalacion: 220 },
+        estandar:  { equipo: 950, instalacion: 280 },
+        premium:   { equipo: 1300, instalacion: 320 }
+      },
+      "9000-10000+ frigorías (espacio amplio)": {
+        economica: { equipo: 560, instalacion: 260 },
+        estandar:  { equipo: 1150, instalacion: 320 },
+        premium:   { equipo: 1600, instalacion: 380 }
+      }
+    }
+  },
+  conductos: {
+    label: "Instalación por conductos",
+    tamanos: {
+      "~60 m² (2-3 estancias)": {
+        economica: { equipo: 950, instalacion: 1400 },
+        estandar:  { equipo: 1650, instalacion: 1700 },
+        premium:   { equipo: 2100, instalacion: 1950 }
+      },
+      "~90 m² (3-4 estancias)": {
+        economica: { equipo: 1165, instalacion: 1900 },
+        estandar:  { equipo: 2246, instalacion: 2100 },
+        premium:   { equipo: 2775, instalacion: 2350 }
+      },
+      "~120 m²+ (4-5 estancias)": {
+        economica: { equipo: 1500, instalacion: 2300 },
+        estandar:  { equipo: 2800, instalacion: 2600 },
+        premium:   { equipo: 3600, instalacion: 2900 }
+      }
+    }
+  },
+  // Coste adicional según dificultad de acceso / longitud de tubería
+  dificultad: {
+    facil:  { label: "Instalación estándar", extra: 0 },
+    balcon: { label: "Recorrido balcón (5-8 m)", extra: 350 },
+    azotea: { label: "Recorrido azotea (>25 m) — requiere equipo reforzado", extra: 4200 }
+  },
+  // Multiplicadores para "varios splits" según cómo se agrupen los compresores.
+  // equipoMult y instalacionMult se aplican sobre (precio unitario x cantidad).
+  multisplitConfig: {
+    "2x1":          { label: "Compresor compartido 2x1", equipoMult: 0.88, instalacionMult: 0.75 },
+    "3x1":          { label: "Compresor compartido 3x1", equipoMult: 0.80, instalacionMult: 0.62 },
+    "independiente": { label: "Cada split con su propio compresor", equipoMult: 1.0, instalacionMult: 1.0 }
+  },
+  // Desinstalación de equipos antiguos
+  desinstalacion: {
+    perUnit: 70,       // split / varios splits, por unidad
+    conductosFlat: 180 // conductos, tarifa plana
+  },
+  IVA: 0.21
+};
+
+const state = { tipo: null, tamano: null, gama: null, dificultad: null, cantidad: null, configCompresor: null, desinstalacion: "no" };
+
+const $ = id => document.getElementById(id);
+
+function selectOpt(container, value){
+  container.querySelectorAll('.opt').forEach(el=>{
+    el.classList.toggle('active', el.dataset.value === value);
+  });
+}
+
+function wireOptGroup(containerId, onSelect){
+  const container = $(containerId);
+  container.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      selectOpt(container, el.dataset.value);
+      onSelect(el.dataset.value);
+    });
+  });
+}
+
+wireOptGroup('tipoInstalacion', (val)=>{
+  state.tipo = val;
+  state.tamano = null;
+  state.cantidad = null;
+  state.configCompresor = null;
+  $('cantidad').value = "";
+  updateVisibleCards();
+  populateTamanos();
+  recalc();
+});
+
+wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
+wireOptGroup('dificultad', (val)=>{ state.dificultad = val; recalc(); });
+wireOptGroup('configCompresor', (val)=>{ state.configCompresor = val; recalc(); });
+wireOptGroup('desinstalacion', (val)=>{ state.desinstalacion = val; recalc(); });
+
+$('tamano').addEventListener('change', (e)=>{ state.tamano = e.target.value || null; recalc(); });
+$('cantidad').addEventListener('change', (e)=>{ state.cantidad = e.target.value ? parseInt(e.target.value) : null; recalc(); });
+
+function updateVisibleCards(){
+  $('cardCantidad').style.display = state.tipo === 'multisplit' ? 'block' : 'none';
+  $('cardConfigCompresor').style.display = state.tipo === 'multisplit' ? 'block' : 'none';
+}
+
+function populateTamanos(){
+  const sel = $('tamano');
+  sel.innerHTML = '';
+  if(!state.tipo){
+    sel.innerHTML = '<option value="">Selecciona el tipo de instalación primero</option>';
+    return;
+  }
+  const key = state.tipo === 'multisplit' ? 'split' : state.tipo;
+  const tamanos = TARIFAS[key].tamanos;
+  sel.innerHTML = '<option value="">Selecciona una opción</option>' +
+    Object.keys(tamanos).map(t=>`<option value="${t}">${t}</option>`).join('');
+  $('tamanoHint').textContent = state.tipo === 'multisplit' ? 'Tamaño aplicado a cada split de la instalación' : '';
+}
+
+function eur(n){
+  return n.toLocaleString('es-ES', {maximumFractionDigits:0}) + ' €';
+}
+
+function isReady(){
+  if(!state.tipo || !state.tamano || !state.gama || !state.dificultad) return false;
+  if(state.tipo === 'multisplit' && (!state.cantidad || !state.configCompresor)) return false;
+  return true;
+}
+
+function computeLines(){
+  const dif = TARIFAS.dificultad[state.dificultad];
+  const lines = [];
+
+  if(state.tipo === 'split' || state.tipo === 'multisplit'){
+    const item = TARIFAS.split.tamanos[state.tamano][state.gama];
+    if(state.tipo === 'split'){
+      lines.push({ label: `Equipo (${state.gama})`, value: item.equipo });
+      lines.push({ label: 'Instalación base', value: item.instalacion });
+      if(state.desinstalacion === 'si') lines.push({ label: 'Desinstalación equipo antiguo', value: TARIFAS.desinstalacion.perUnit });
+    } else {
+      const cfg = TARIFAS.multisplitConfig[state.configCompresor];
+      const equipoTotal = Math.round(item.equipo * state.cantidad * cfg.equipoMult);
+      const instalacionTotal = Math.round(item.instalacion * state.cantidad * cfg.instalacionMult);
+      lines.push({ label: `${state.cantidad}x Equipo (${state.gama}) — ${cfg.label}`, value: equipoTotal });
+      lines.push({ label: `Instalación (${cfg.label})`, value: instalacionTotal });
+      if(state.desinstalacion === 'si') lines.push({ label: `Desinstalación ${state.cantidad} equipos antiguos`, value: TARIFAS.desinstalacion.perUnit * state.cantidad });
+    }
+  } else if(state.tipo === 'conductos'){
+    const item = TARIFAS.conductos.tamanos[state.tamano][state.gama];
+    lines.push({ label: `Equipo (${state.gama})`, value: item.equipo });
+    lines.push({ label: 'Instalación base', value: item.instalacion });
+    if(state.desinstalacion === 'si') lines.push({ label: 'Desinstalación equipo antiguo', value: TARIFAS.desinstalacion.conductosFlat });
+  }
+
+  if(dif.extra > 0) lines.push({ label: dif.label, value: dif.extra });
+  return lines;
+}
+
+function recalc(){
+  const lineWrap = $('lineItems');
+  const btnWa = $('btnWhatsapp');
+  const btnEmail = $('btnEmail');
+  const btnCopy = $('btnCopy');
+
+  if(!isReady()){
+    lineWrap.innerHTML = '<div class="line-item empty"><span>Completa los pasos anteriores</span><span>—</span></div>';
+    $('totalConIva').textContent = '0 €';
+    $('stickyTotal').textContent = '0 €';
+    $('totalSinIva').textContent = 'Base: — · IVA (21%): —';
+    btnWa.disabled = btnEmail.disabled = btnCopy.disabled = true;
+    return;
+  }
+
+  const lines = computeLines();
+  const base = lines.reduce((s,l)=>s+l.value, 0);
+  const iva = base * TARIFAS.IVA;
+  const total = base + iva;
+
+  lineWrap.innerHTML = lines.map(l=>
+    `<div class="line-item"><span>${l.label}</span><span>${eur(l.value)}</span></div>`
+  ).join('');
+
+  $('totalConIva').textContent = eur(Math.round(total));
+  $('stickyTotal').textContent = eur(Math.round(total));
+  $('totalSinIva').textContent = `Base: ${eur(Math.round(base))} · IVA (21%): ${eur(Math.round(iva))}`;
+
+  btnWa.disabled = btnEmail.disabled = btnCopy.disabled = false;
+}
+
+function buildMessage(){
+  const cliente = $('cliente').value.trim() || 'Cliente';
+  const direccion = $('direccion').value.trim();
+  const notas = $('notas').value.trim();
+  const lines = computeLines();
+  const base = lines.reduce((s,l)=>s+l.value, 0);
+  const iva = base * TARIFAS.IVA;
+  const total = base + iva;
+
+  const tipoKey = state.tipo === 'multisplit' ? 'split' : state.tipo;
+  const tipoLabel = state.tipo === 'multisplit'
+    ? `${TARIFAS.multisplitConfig[state.configCompresor].label} (${state.cantidad} splits)`
+    : TARIFAS[tipoKey].label;
+
+  let msg = `PRESUPUESTO — GRUPO VÉRTEX\n\n`;
+  msg += `Cliente: ${cliente}\n`;
+  if(direccion) msg += `Dirección: ${direccion}\n`;
+  msg += `Instalación: ${tipoLabel} — ${state.tamano}\n\n`;
+  msg += lines.map(l=>`${l.label}: ${eur(l.value)}`).join('\n') + '\n\n';
+  msg += `Base imponible: ${eur(Math.round(base))}\n`;
+  msg += `IVA (21%): ${eur(Math.round(iva))}\n`;
+  msg += `TOTAL: ${eur(Math.round(total))}\n`;
+  if(notas) msg += `\nNotas: ${notas}\n`;
+  msg += `\nPresupuesto orientativo sujeto a visita técnica de confirmación.`;
+  return msg;
+}
+
+$('btnWhatsapp').addEventListener('click', ()=>{
+  const msg = buildMessage();
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+});
+
+$('btnEmail').addEventListener('click', ()=>{
+  const msg = buildMessage();
+  const subject = `Presupuesto Grupo Vértex — ${$('cliente').value.trim() || 'Cliente'}`;
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+});
+
+$('btnCopy').addEventListener('click', (e)=>{
+  const msg = buildMessage();
+  navigator.clipboard.writeText(msg).then(()=>{
+    const original = e.target.textContent;
+    e.target.textContent = '✓ Copiado';
+    setTimeout(()=>{ e.target.textContent = original; }, 1500);
+  });
+});
+
+selectOpt($('desinstalacion'), 'no');
+updateVisibleCards();
+populateTamanos();
+recalc();
+</script>
+
+</body>
+</html>
