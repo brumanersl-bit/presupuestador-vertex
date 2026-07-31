@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Vértex · Presupuestador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #F5F7F7;
+    --panel: #FFFFFF;
+    --ink: #16232A;
+    --ink-soft: #55676E;
+    --line: #DCE3E4;
+    --teal: #0E7C86;
+    --teal-deep: #0A5A62;
+    --amber: #E8871E;
+    --amber-soft: #FCEEDC;
+    --danger: #C4472A;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 96px;
+  }
+  h1,h2,h3, .num{
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  header{
+    background: linear-gradient(135deg, var(--teal-deep), var(--teal));
+    color: white;
+    padding: 22px 18px 26px;
+    border-radius: 0 0 20px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:160px; height:160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  header::before{
+    content:"";
+    position:absolute; right:30px; bottom:-60px;
+    width:110px; height:110px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.85; margin-bottom: 6px; font-weight:600;
+  }
+  .brand svg{width:18px; height:18px; flex-shrink:0;}
+  header h1{
+    margin:0; font-size: 24px; font-weight:700; line-height:1.25;
+    position:relative; z-index:1;
+  }
+  header p{
+    margin: 6px 0 0; font-size: 13.5px; opacity:0.85; max-width: 320px;
+    position:relative; z-index:1;
+  }
+
+  main{ padding: 16px 14px 0; max-width: 560px; margin: 0 auto; }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card h2{
+    font-size: 12.5px; text-transform: uppercase; letter-spacing:0.08em;
+    color: var(--teal-deep); margin: 0 0 12px; font-weight:700;
+    display:flex; align-items:center; gap:7px;
+  }
+  .step-dot{
+    width:18px; height:18px; border-radius:50%;
+    background: var(--teal); color:white;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:10.5px; font-weight:700; font-family:'Space Grotesk',sans-serif;
+    flex-shrink:0;
+  }
+
+  label{
+    display:block; font-size: 13px; font-weight:600; margin: 12px 0 6px;
+    color: var(--ink);
+  }
+  label:first-of-type{ margin-top:0; }
+  input[type=text], input[type=tel]{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 15px; font-family:inherit;
+    background: #FBFCFC; color: var(--ink);
+  }
+  input:focus{ outline: 2px solid var(--teal); outline-offset:1px; border-color:var(--teal); }
+
+  .opt-grid{ display:grid; gap:8px; }
+  .opt-grid.cols-2{ grid-template-columns: 1fr 1fr; }
+  .opt-grid.cols-3{ grid-template-columns: repeat(3, 1fr); }
+
+  .opt{
+    border: 1.5px solid var(--line);
+    background: #FBFCFC;
+    border-radius: 10px;
+    padding: 10px 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+    transition: border-color .12s, background .12s, color .12s;
+    line-height:1.3;
+  }
+  .opt small{ display:block; font-weight:500; font-size:11px; opacity:0.75; margin-top:2px;}
+  .opt.active{
+    border-color: var(--teal);
+    background: var(--teal);
+    color: white;
+  }
+  .opt.active small{ opacity:0.9; }
+  .opt.amber.active{ background: var(--amber); border-color: var(--amber); }
+
+  select{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 15px; font-family:inherit;
+    background: #FBFCFC; color: var(--ink); appearance:none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355676E' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;
+  }
+
+  textarea{
+    width:100%; padding: 11px 12px; border-radius: 10px;
+    border: 1.5px solid var(--line); font-size: 14.5px; font-family: inherit;
+    background: #FBFCFC; color: var(--ink); resize: vertical; min-height: 60px;
+  }
+
+  .hint{ font-size:12px; color:var(--ink-soft); margin-top:5px; }
+  .hint.warn{ color: var(--danger); font-weight:600; }
+
+  .summary-card{
+    background: var(--ink);
+    color: white;
+    border-radius: var(--radius);
+    padding: 18px 16px;
+  }
+  .summary-card h2{ color: rgba(255,255,255,0.6); }
+  .line-item{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size: 13.5px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.85);
+  }
+  .line-item span:last-child{ font-family:'Space Grotesk',sans-serif; font-weight:600; }
+  .line-item.empty{ color: rgba(255,255,255,0.35); font-style: italic; }
+  .total-row{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-top: 14px; padding-top: 12px; border-top: 1.5px solid rgba(255,255,255,0.2);
+  }
+  .total-row .label{ font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color: rgba(255,255,255,0.6); font-weight:600;}
+  .total-row .num{ font-size: 30px; font-weight:700; }
+  .total-sub{ font-size:11.5px; color: rgba(255,255,255,0.45); margin-top:2px; }
+
+  .actions{ display:flex; gap:10px; margin-top: 16px; }
+  .btn{
+    flex:1; border:none; border-radius: 10px; padding: 13px 10px;
+    font-size: 14px; font-weight:700; font-family:'Inter',sans-serif;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    cursor:pointer; transition: transform .1s, opacity .1s;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn svg{ width:16px; height:16px; }
+  .btn-whatsapp{ background:#25D366; color:#0B2E1B; }
+  .btn-email{ background: rgba(255,255,255,0.12); color:white; border: 1px solid rgba(255,255,255,0.25); }
+  .btn-copy{ background: transparent; color: rgba(255,255,255,0.55); font-size:12.5px; font-weight:600; padding: 8px; }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .send-hint{ font-size:11px; color: rgba(255,255,255,0.4); margin-top:8px; text-align:center; }
+
+  .sticky-bar{
+    position: fixed; bottom:0; left:0; right:0;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+  }
+  .sticky-bar .label{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+  .sticky-bar .num{ font-size:20px; font-weight:700; color: var(--teal-deep); }
+
+  .notice{
+    background: var(--amber-soft); border: 1px solid #F0CC9A; color: #8A5411;
+    border-radius: 10px; padding: 10px 12px; font-size: 12.5px; margin-top: 10px; line-height:1.4;
+  }
+
+  footer{ text-align:center; padding: 18px 16px 8px; font-size:11px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+    Grupo Vértex
+  </div>
+  <h1>Presupuesto en 60 segundos</h1>
+  <p>Rellena los datos in situ y envíalo al cliente al momento.</p>
+</header>
+
+<main>
+
+  <div class="card">
+    <h2><span class="step-dot">1</span> Datos del cliente</h2>
+    <label for="cliente">Nombre del cliente</label>
+    <input type="text" id="cliente" placeholder="Ej. Familia Ortega">
+    <label for="direccion">Dirección / zona (opcional)</label>
+    <input type="text" id="direccion" placeholder="Ej. C/ Mayor 12, Picassent">
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">2</span> Tipo de instalación</h2>
+    <div class="opt-grid cols-3" id="tipoInstalacion">
+      <div class="opt" data-value="split">Split individual</div>
+      <div class="opt" data-value="2x1">2x1</div>
+      <div class="opt" data-value="conductos">Conductos</div>
+    </div>
+  </div>
+
+  <div class="card" id="cardTamano" style="display:none;">
+    <h2><span class="step-dot">3</span> Tamaño / capacidad</h2>
+    <select id="tamano"><option value="">Selecciona el tipo de instalación primero</option></select>
+  </div>
+
+  <div class="card" id="cardConductosAviso" style="display:none;">
+    <div class="notice">Este presupuesto asume que la <strong>preinstalación de conductos ya está hecha</strong>. Si la vivienda no tiene preinstalación, no la calcules aquí: consúltalo aparte con el cliente.</div>
+  </div>
+
+  <div class="card" id="cardGama" style="display:none;">
+    <h2><span class="step-dot">4</span> Equipo</h2>
+    <div class="opt-grid cols-3" id="gama"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">5</span> Recorrido de tubería</h2>
+    <select id="tuberia"></select>
+    <div class="hint" id="tuberiaHint"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">6</span> Extras</h2>
+    <label>Desinstalación de equipo(s) antiguo(s)</label>
+    <div class="opt-grid cols-2" id="desinstalacion">
+      <div class="opt" data-value="no">No</div>
+      <div class="opt" data-value="si">Sí</div>
+    </div>
+    <label>Bomba de condensados</label>
+    <div class="opt-grid cols-2" id="bombaCondensados">
+      <div class="opt" data-value="no">No</div>
+      <div class="opt" data-value="si">Sí (+100 €)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">7</span> Notas para el cliente (opcional)</h2>
+    <textarea id="notas" placeholder="Ej. Plazo de instalación: 3-5 días."></textarea>
+  </div>
+
+  <div class="summary-card">
+    <h2>Resumen del presupuesto</h2>
+    <div id="lineItems">
+      <div class="line-item empty"><span>Completa los pasos anteriores</span><span>—</span></div>
+    </div>
+    <div class="total-row">
+      <div>
+        <div class="label">Total con IVA</div>
+        <div class="total-sub" id="totalSinIva">Base: — · IVA (21%): —</div>
+      </div>
+      <div class="num" id="totalConIva">0 €</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-whatsapp" id="btnWhatsapp" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.06-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.77 1.24-.45.06-1.02.09-1.65-.1-.38-.12-.87-.28-1.5-.55-2.63-1.14-4.35-3.8-4.48-3.98-.13-.18-1.07-1.42-1.07-2.71 0-1.29.68-1.92.92-2.18.24-.26.53-.32.7-.32h.5c.16 0 .38-.03.58.44.22.53.75 1.83.82 1.97.07.14.11.3.02.48-.09.18-.14.29-.27.45-.14.16-.29.36-.41.48-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.57.74 1.83.87.27.14.45.2.51.32.07.12.07.66-.15 1.28z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn btn-email" id="btnEmail" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+        Email
+      </button>
+    </div>
+    <div class="send-hint">Al enviar por WhatsApp o Email también se descarga el PDF del presupuesto</div>
+    <button class="btn btn-copy" id="btnCopy" disabled style="width:100%; margin-top:6px;">Copiar texto del presupuesto</button>
+  </div>
+
+</main>
+
+<div class="sticky-bar">
+  <span class="label">Total estimado</span>
+  <span class="num" id="stickyTotal">0 €</span>
+</div>
+
+<footer>Tarifas internas Grupo Vértex · Precios editables por el administrador</footer>
+
+<script>
+/* ============================================================
+   TARIFAS — editar aquí cuando cambien precios de proveedor.
+   Todos los importes en euros, SIN IVA.
+   ============================================================ */
+const TARIFAS = {
+  split: {
+    label: "Split individual",
+    instalacionBase: 250,
+    unidades: 1,
+    tamanos: {
+      "3000 frigorías (hasta ~30 m²)": {
+        economica: { equipo: 236,   marca: "Haier WIND 35-RD2" },
+        estandar:  { equipo: 394.9, marca: "Kosner Nova Evo KSTI 12N/35" },
+        premium:   { equipo: 590,   marca: "Mitsubishi Electric Gama Doméstica MSZ-HR35VFK wifi" }
+      },
+      "4500 frigorías (hasta ~45-50 m²)": {
+        economica: { equipo: 429,   marca: "Leroy Merlin Brokton 4500 fg" },
+        estandar:  { equipo: 713.9, marca: "Kosner Nova Evo KSTI 18N/50" },
+        premium:   { equipo: 1045,  marca: "Mitsubishi Electric Gama Doméstica MSZ-HR50VFK wifi" }
+      }
+    }
+  },
+  "2x1": {
+    label: "2x1",
+    instalacionBase: 450,
+    unidades: 2,
+    gamas: {
+      economica: { equipo: 492,  marca: "Leroy Merlin Brokton 2x1 (2000+3000 fg)" },
+      estandar:  { equipo: 991,  marca: "Kosner 2x1" },
+      premium:   { equipo: 1370, marca: "Mitsubishi Electric Gama Doméstica MXZ-HR2535E40VF" }
+    }
+  },
+  conductos: {
+    label: "Instalación por conductos (solo Kosner, por potencia)",
+    instalacionBase: 800,
+    unidades: 1,
+    tamanos: {
+      "Kosner KSTI-30/80 CD Nova Evo — 7100 W": { equipo: 1239, marca: "Kosner KSTI-30/80 CD Nova Evo" },
+      "Kosner KSTI-36/100 CD Nova Evo — 9000 fg": { equipo: 1750, marca: "Kosner KSTI-36/100 CD Nova Evo" },
+      "Kosner KSTI-42/125 CD Nova Evo — 12100 W": { equipo: 2200, marca: "Kosner KSTI-42/125 CD Nova Evo" }
+    }
+  },
+  // Recorrido de tubería: instalación base = hasta 3 m. Incremento por cada 3 m adicionales
+  // según tipo: split/2x1 = 50€, conductos = 80€.
+  tuberiaTramos: ["0-3","3-6","6-9","9-12","12-15","15-18","18-21","21-24"],
+  tuberiaIncremento: { split: 50, "2x1": 50, conductos: 80 },
+  desinstalacion: {
+    perUnit: 70,
+    conductosFlat: 180
+  },
+  bombaCondensados: { extra: 100 },
+  IVA: 0.21
+};
+
+const GAMA_ORDEN = ["economica", "estandar", "premium"];
+
+const state = { tipo: null, tamano: null, gama: null, tuberia: "0-3", desinstalacion: "no", bombaCondensados: "no" };
+
+const $ = id => document.getElementById(id);
+
+function selectOpt(container, value){
+  container.querySelectorAll('.opt').forEach(el=>{
+    el.classList.toggle('active', el.dataset.value === value);
+  });
+}
+
+function wireOptGroup(containerId, onSelect){
+  const container = $(containerId);
+  container.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      selectOpt(container, el.dataset.value);
+      onSelect(el.dataset.value);
+    });
+  });
+}
+
+wireOptGroup('tipoInstalacion', (val)=>{
+  state.tipo = val;
+  state.tamano = null;
+  state.gama = null;
+  updateVisibleCards();
+  populateTamano();
+  populateGama();
+  populateTuberiaOptions();
+  recalc();
+});
+
+wireOptGroup('desinstalacion', (val)=>{ state.desinstalacion = val; recalc(); });
+wireOptGroup('bombaCondensados', (val)=>{ state.bombaCondensados = val; recalc(); });
+
+$('tamano').addEventListener('change', (e)=>{ state.tamano = e.target.value || null; state.gama = null; populateGama(); recalc(); });
+$('tuberia').addEventListener('change', (e)=>{ state.tuberia = e.target.value; recalc(); });
+
+function updateVisibleCards(){
+  $('cardTamano').style.display = (state.tipo === 'split' || state.tipo === 'conductos') ? 'block' : 'none';
+  $('cardConductosAviso').style.display = state.tipo === 'conductos' ? 'block' : 'none';
+  $('cardGama').style.display = (state.tipo === 'split' || state.tipo === '2x1') ? 'block' : 'none';
+}
+
+function populateTamano(){
+  const sel = $('tamano');
+  sel.innerHTML = '';
+  if(state.tipo !== 'split' && state.tipo !== 'conductos'){
+    sel.innerHTML = '<option value="">—</option>';
+    return;
+  }
+  const tamanos = TARIFAS[state.tipo].tamanos;
+  sel.innerHTML = '<option value="">Selecciona una opción</option>' +
+    Object.keys(tamanos).map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+function populateGama(){
+  const wrap = $('gama');
+  if(state.tipo === '2x1'){
+    const source = TARIFAS['2x1'].gamas;
+    wrap.innerHTML = GAMA_ORDEN.map(g=>{
+      const d = source[g];
+      return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
+    }).join('');
+    wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
+  } else if(state.tipo === 'split'){
+    if(!state.tamano){ wrap.innerHTML = ''; return; }
+    const source = TARIFAS.split.tamanos[state.tamano];
+    wrap.innerHTML = GAMA_ORDEN.map(g=>{
+      const d = source[g];
+      return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
+    }).join('');
+    wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
+  } else {
+    wrap.innerHTML = '';
+  }
+}
+
+function populateTuberiaOptions(){
+  const sel = $('tuberia');
+  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
+  sel.innerHTML = TARIFAS.tuberiaTramos.map((tramo, i)=>{
+    const extra = i * incremento;
+    const label = i === 0 ? `Hasta 3 m (instalación base)` : `${tramo} m (+${extra} €)`;
+    return `<option value="${tramo}">${label}</option>`;
+  }).join('');
+  state.tuberia = "0-3";
+  updateTuberiaHint();
+}
+
+function updateTuberiaHint(){
+  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
+  const isMax = state.tuberia === '21-24';
+  $('tuberiaHint').classList.toggle('warn', isMax);
+  $('tuberiaHint').textContent = isMax
+    ? 'A partir de ~25 m puede superar el límite del equipo residencial y requerir un equipo reforzado (presupuesto aparte).'
+    : `Cada 3 m adicionales a partir de los 3 m base suman +${incremento} €`;
+}
+
+$('tuberia').addEventListener('change', updateTuberiaHint);
+
+function eur(n){
+  return n.toLocaleString('es-ES', {maximumFractionDigits:0}) + ' €';
+}
+
+function isReady(){
+  if(!state.tipo) return false;
+  if(state.tipo === 'split') return !!state.tamano && !!state.gama;
+  if(state.tipo === '2x1') return !!state.gama;
+  if(state.tipo === 'conductos') return !!state.tamano;
+  return false;
+}
+
+function getItemYBase(){
+  if(state.tipo === 'split'){
+    return { item: TARIFAS.split.tamanos[state.tamano][state.gama], base: TARIFAS.split.instalacionBase, unidades: TARIFAS.split.unidades };
+  }
+  if(state.tipo === '2x1'){
+    return { item: TARIFAS['2x1'].gamas[state.gama], base: TARIFAS['2x1'].instalacionBase, unidades: TARIFAS['2x1'].unidades };
+  }
+  if(state.tipo === 'conductos'){
+    return { item: TARIFAS.conductos.tamanos[state.tamano], base: TARIFAS.conductos.instalacionBase, unidades: TARIFAS.conductos.unidades };
+  }
+  return null;
+}
+
+function computeLines(){
+  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
+  const tramoIndex = TARIFAS.tuberiaTramos.indexOf(state.tuberia);
+  const tubExtra = tramoIndex * incremento;
+  const { item, base, unidades } = getItemYBase();
+  const lines = [];
+
+  lines.push({ label: `Equipo ${item.marca}`, value: item.equipo });
+  lines.push({ label: 'Instalación base', value: base });
+
+  if(state.desinstalacion === 'si'){
+    const extra = state.tipo === 'conductos' ? TARIFAS.desinstalacion.conductosFlat : TARIFAS.desinstalacion.perUnit * unidades;
+    lines.push({ label: unidades > 1 ? `Desinstalación ${unidades} equipos antiguos` : 'Desinstalación equipo antiguo', value: extra });
+  }
+  if(state.bombaCondensados === 'si'){
+    lines.push({ label: 'Bomba de condensados', value: TARIFAS.bombaCondensados.extra });
+  }
+  if(tubExtra > 0) lines.push({ label: `Recorrido de tubería (${state.tuberia} m)`, value: tubExtra });
+
+  return lines;
+}
+
+function recalc(){
+  const lineWrap = $('lineItems');
+  const btnWa = $('btnWhatsapp');
+  const btnEmail = $('btnEmail');
+  const btnCopy = $('btnCopy');
+
+  if(!isReady()){
+    lineWrap.innerHTML = '<div class="line-item empty"><span>Completa los pasos anteriores</span><span>—</span></div>';
+    $('totalConIva').textContent = '0 €';
+    $('stickyTotal').textContent = '0 €';
+    $('totalSinIva').textContent = 'Base: — · IVA (21%): —';
+    btnWa.disabled = btnEmail.disabled = btnCopy.disabled = true;
+    return;
+  }
+
+  const lines = computeLines();
+  const base = lines.reduce((s,l)=>s+l.value, 0);
+  const iva = base * TARIFAS.IVA;
+  const total = base + iva;
+
+  lineWrap.innerHTML = lines.map(l=>
+    `<div class="line-item"><span>${l.label}</span><span>${eur(l.value)}</span></div>`
+  ).join('');
+
+  $('totalConIva').textContent = eur(Math.round(total));
+  $('stickyTotal').textContent = eur(Math.round(total));
+  $('totalSinIva').textContent = `Base: ${eur(Math.round(base))} · IVA (21%): ${eur(Math.round(iva))}`;
+
+  btnWa.disabled = btnEmail.disabled = btnCopy.disabled = false;
+}
+
+function buildMessage(){
+  const cliente = $('cliente').value.trim() || 'Cliente';
+  const direccion = $('direccion').value.trim();
+  const notas = $('notas').value.trim();
+  const lines = computeLines();
+  const base = lines.reduce((s,l)=>s+l.value, 0);
+  const iva = base * TARIFAS.IVA;
+  const total = base + iva;
+
+  const tipoLabel = TARIFAS[state.tipo].label + (state.tamano ? ` — ${state.tamano}` : '');
+
+  let msg = `PRESUPUESTO — GRUPO VÉRTEX\n\n`;
+  msg += `Cliente: ${cliente}\n`;
+  if(direccion) msg += `Dirección: ${direccion}\n`;
+  msg += `Instalación: ${tipoLabel}\n\n`;
+  msg += lines.map(l=>`${l.label}: ${eur(l.value)}`).join('\n') + '\n\n';
+  msg += `Base imponible: ${eur(Math.round(base))}\n`;
+  msg += `IVA (21%): ${eur(Math.round(iva))}\n`;
+  msg += `TOTAL: ${eur(Math.round(total))}\n`;
+  if(notas) msg += `\nNotas: ${notas}\n`;
+  msg += `\nPresupuesto orientativo sujeto a visita técnica de confirmación.`;
+  return msg;
+}
+
+function downloadPDF(){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const cliente = $('cliente').value.trim() || 'Cliente';
+    const msg = buildMessage();
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('PRESUPUESTO — GRUPO VÉRTEX', 14, 18);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10.5);
+    const bodyLines = msg.split('\n').slice(2); // quitamos el título repetido y línea en blanco
+    const wrapped = doc.splitTextToSize(bodyLines.join('\n'), 180);
+    doc.text(wrapped, 14, 30);
+    doc.save(`presupuesto-${cliente.replace(/[^a-z0-9]+/gi,'_')}.pdf`);
+  } catch(err){
+    console.error('No se pudo generar el PDF', err);
+  }
+}
+
+$('btnWhatsapp').addEventListener('click', ()=>{
+  const msg = buildMessage();
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  downloadPDF();
+});
+
+$('btnEmail').addEventListener('click', ()=>{
+  const msg = buildMessage();
+  const subject = `Presupuesto Grupo Vértex — ${$('cliente').value.trim() || 'Cliente'}`;
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+  downloadPDF();
+});
+
+$('btnCopy').addEventListener('click', (e)=>{
+  const msg = buildMessage();
+  navigator.clipboard.writeText(msg).then(()=>{
+    const original = e.target.textContent;
+    e.target.textContent = '✓ Copiado';
+    setTimeout(()=>{ e.target.textContent = original; }, 1500);
+  });
+});
+
+selectOpt($('desinstalacion'), 'no');
+selectOpt($('bombaCondensados'), 'no');
+updateVisibleCards();
+populateTamano();
+populateGama();
+populateTuberiaOptions();
+recalc();
+</script>
+
+</body>
+</html>
