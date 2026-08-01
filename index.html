@@ -172,6 +172,7 @@
   .total-sub{ font-size:11.5px; color: rgba(255,255,255,0.45); margin-top:2px; }
 
   .actions{ display:flex; gap:10px; margin-top: 16px; }
+  .actions-row{ display:flex; gap:10px; margin-top:8px; }
   .btn{
     flex:1; border:none; border-radius: 10px; padding: 13px 10px;
     font-size: 14px; font-weight:700; font-family:'Inter',sans-serif;
@@ -181,10 +182,10 @@
   .btn:active{ transform: scale(0.97); }
   .btn svg{ width:16px; height:16px; }
   .btn-whatsapp{ background:#25D366; color:#0B2E1B; }
+  .btn-pdf{ background: var(--amber); color:#3A2405; }
   .btn-email{ background: rgba(255,255,255,0.12); color:white; border: 1px solid rgba(255,255,255,0.25); }
   .btn-copy{ background: transparent; color: rgba(255,255,255,0.55); font-size:12.5px; font-weight:600; padding: 8px; }
   .btn:disabled{ opacity:0.4; cursor:not-allowed; }
-  .send-hint{ font-size:11px; color: rgba(255,255,255,0.4); margin-top:8px; text-align:center; }
 
   .sticky-bar{
     position: fixed; bottom:0; left:0; right:0;
@@ -230,13 +231,32 @@
     <h2><span class="step-dot">2</span> Tipo de instalación</h2>
     <div class="opt-grid cols-3" id="tipoInstalacion">
       <div class="opt" data-value="split">Split individual</div>
-      <div class="opt" data-value="2x1">2x1</div>
+      <div class="opt" data-value="multisplit">Varios splits (2x1)</div>
       <div class="opt" data-value="conductos">Conductos</div>
     </div>
   </div>
 
+  <div class="card" id="cardClienteTieneEquipo" style="display:none;">
+    <h2><span class="step-dot">3</span> ¿El cliente ya tiene el equipo?</h2>
+    <div class="opt-grid cols-2" id="clienteTieneEquipo">
+      <div class="opt" data-value="no">No, lo compramos</div>
+      <div class="opt" data-value="si">Sí, ya lo tiene</div>
+    </div>
+    <div class="card" id="cardCantidadEquiposCliente" style="display:none; margin-top:12px; padding:0; border:none;">
+      <label style="margin-top:0;">Cantidad de equipos a instalar</label>
+      <select id="cantidadEquiposCliente">
+        <option value="1">1 equipo</option>
+        <option value="2">2 equipos</option>
+        <option value="3">3 equipos</option>
+        <option value="4">4 equipos</option>
+        <option value="5">5 equipos</option>
+        <option value="6">6 equipos</option>
+      </select>
+    </div>
+  </div>
+
   <div class="card" id="cardTamano" style="display:none;">
-    <h2><span class="step-dot">3</span> Tamaño / capacidad</h2>
+    <h2><span class="step-dot">4</span> Tamaño / capacidad</h2>
     <select id="tamano"><option value="">Selecciona el tipo de instalación primero</option></select>
   </div>
 
@@ -245,18 +265,27 @@
   </div>
 
   <div class="card" id="cardGama" style="display:none;">
-    <h2><span class="step-dot">4</span> Equipo</h2>
+    <h2><span class="step-dot">5</span> <span id="gamaTitle">Equipo</span></h2>
     <div class="opt-grid cols-3" id="gama"></div>
   </div>
 
   <div class="card">
-    <h2><span class="step-dot">5</span> Recorrido de tubería</h2>
-    <select id="tuberia"></select>
-    <div class="hint" id="tuberiaHint"></div>
+    <h2><span class="step-dot">6</span> Recorrido de tubería</h2>
+    <select id="tuberia">
+      <option value="0-3">Hasta 3 m (instalación base)</option>
+      <option value="3-6">3 - 6 m</option>
+      <option value="6-9">6 - 9 m</option>
+      <option value="9-12">9 - 12 m</option>
+      <option value="12-15">12 - 15 m</option>
+      <option value="15-18">15 - 18 m</option>
+      <option value="18-21">18 - 21 m</option>
+      <option value="21-24">21 - 24 m</option>
+    </select>
+    <div class="hint" id="tuberiaHint">Cada 3 m adicionales a partir de los 3 m base suman un extra</div>
   </div>
 
   <div class="card">
-    <h2><span class="step-dot">6</span> Extras</h2>
+    <h2><span class="step-dot">7</span> Extras</h2>
     <label>Desinstalación de equipo(s) antiguo(s)</label>
     <div class="opt-grid cols-2" id="desinstalacion">
       <div class="opt" data-value="no">No</div>
@@ -270,7 +299,7 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-dot">7</span> Notas para el cliente (opcional)</h2>
+    <h2><span class="step-dot">8</span> Notas para el cliente (opcional)</h2>
     <textarea id="notas" placeholder="Ej. Plazo de instalación: 3-5 días."></textarea>
   </div>
 
@@ -286,18 +315,24 @@
       </div>
       <div class="num" id="totalConIva">0 €</div>
     </div>
-    <div class="actions">
+    <div class="actions-row">
       <button class="btn btn-whatsapp" id="btnWhatsapp" disabled>
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.06-1.33A9.94 9.94 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.18-1.77 1.24-.45.06-1.02.09-1.65-.1-.38-.12-.87-.28-1.5-.55-2.63-1.14-4.35-3.8-4.48-3.98-.13-.18-1.07-1.42-1.07-2.71 0-1.29.68-1.92.92-2.18.24-.26.53-.32.7-.32h.5c.16 0 .38-.03.58.44.22.53.75 1.83.82 1.97.07.14.11.3.02.48-.09.18-.14.29-.27.45-.14.16-.29.36-.41.48-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.57.74 1.83.87.27.14.45.2.51.32.07.12.07.66-.15 1.28z"/></svg>
         WhatsApp
       </button>
-      <button class="btn btn-email" id="btnEmail" disabled>
+      <button class="btn btn-pdf" id="btnPdf" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+        PDF
+      </button>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-email" id="btnEmail" disabled style="flex:1;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
         Email
       </button>
     </div>
-    <div class="send-hint">Al enviar por WhatsApp o Email también se descarga el PDF del presupuesto</div>
     <button class="btn btn-copy" id="btnCopy" disabled style="width:100%; margin-top:6px;">Copiar texto del presupuesto</button>
+    <div class="hint" style="color:rgba(255,255,255,0.4); margin-top:8px;">El PDF se descarga aparte — adjúntalo manualmente en el chat de WhatsApp si el cliente lo quiere.</div>
   </div>
 
 </main>
@@ -313,6 +348,9 @@
 /* ============================================================
    TARIFAS — editar aquí cuando cambien precios de proveedor.
    Todos los importes en euros, SIN IVA.
+   Kosner y Mitsubishi Gama Doméstica: precios reales facilitados
+   por Vértex. Leroy Merlin económica: precio de referencia web
+   (÷1.21 sobre el precio de venta) — revisar periódicamente.
    ============================================================ */
 const TARIFAS = {
   split: {
@@ -323,39 +361,40 @@ const TARIFAS = {
       "3000 frigorías (hasta ~30 m²)": {
         economica: { equipo: 236,   marca: "Haier WIND 35-RD2" },
         estandar:  { equipo: 394.9, marca: "Kosner Nova Evo KSTI 12N/35" },
-        premium:   { equipo: 590,   marca: "Mitsubishi Electric Gama Doméstica MSZ-HR35VFK wifi" }
+        premium:   { equipo: 590,   marca: "Mitsubishi Electric MSZ-HR35VFK" }
       },
       "4500 frigorías (hasta ~45-50 m²)": {
         economica: { equipo: 429,   marca: "Leroy Merlin Brokton 4500 fg" },
         estandar:  { equipo: 713.9, marca: "Kosner Nova Evo KSTI 18N/50" },
-        premium:   { equipo: 1045,  marca: "Mitsubishi Electric Gama Doméstica MSZ-HR50VFK wifi" }
+        premium:   { equipo: 1045,  marca: "Mitsubishi Electric MSZ-HR50VFK" }
       }
     }
   },
-  "2x1": {
-    label: "2x1",
+  multisplit: {
+    label: "Varios splits (2x1)",
     instalacionBase: 450,
     unidades: 2,
     gamas: {
-      economica: { equipo: 492,  marca: "Leroy Merlin Brokton 2x1 (2000+3000 fg)" },
-      estandar:  { equipo: 991,  marca: "Kosner 2x1" },
-      premium:   { equipo: 1370, marca: "Mitsubishi Electric Gama Doméstica MXZ-HR2535E40VF" }
+      economica: { equipo: 492,   marca: "Leroy Merlin Brokton 2x1 (2000+3000 fg)" },
+      estandar:  { equipo: 991,   marca: "Kosner 2x1" },
+      premium:   { equipo: 1370,  marca: "Mitsubishi Electric MXZ-HR2535E40VF" }
     }
   },
   conductos: {
-    label: "Instalación por conductos (solo Kosner, por potencia)",
+    label: "Instalación por conductos",
     instalacionBase: 800,
     unidades: 1,
-    tamanos: {
-      "Kosner KSTI-30/80 CD Nova Evo — 7100 W": { equipo: 1239, marca: "Kosner KSTI-30/80 CD Nova Evo" },
-      "Kosner KSTI-36/100 CD Nova Evo — 9000 fg": { equipo: 1750, marca: "Kosner KSTI-36/100 CD Nova Evo" },
-      "Kosner KSTI-42/125 CD Nova Evo — 12100 W": { equipo: 2200, marca: "Kosner KSTI-42/125 CD Nova Evo" }
+    // Solo Kosner, por potencia — sin gamas
+    potencias: {
+      p1: { equipo: 1239, marca: "Kosner KSTI-30/80 CD Nova Evo (7100 W)" },
+      p2: { equipo: 1750, marca: "Kosner KSTI-36/100 CD Nova Evo (9000 fg)" },
+      p3: { equipo: 2200, marca: "Kosner KSTI-42/125 CD Nova Evo (12100 W)" }
     }
   },
-  // Recorrido de tubería: instalación base = hasta 3 m. Incremento por cada 3 m adicionales
-  // según tipo: split/2x1 = 50€, conductos = 80€.
+  // Recorrido de tubería: instalación base = hasta 3 m. Extra por cada 3 m adicionales.
+  // Ductos tiene una tarifa distinta (más cara) al resto de instalaciones.
   tuberiaTramos: ["0-3","3-6","6-9","9-12","12-15","15-18","18-21","21-24"],
-  tuberiaIncremento: { split: 50, "2x1": 50, conductos: 80 },
+  tuberiaExtraPorTramo: { default: 50, conductos: 80 },
   desinstalacion: {
     perUnit: 70,
     conductosFlat: 180
@@ -365,8 +404,18 @@ const TARIFAS = {
 };
 
 const GAMA_ORDEN = ["economica", "estandar", "premium"];
+const POTENCIA_ORDEN = ["p1", "p2", "p3"];
 
-const state = { tipo: null, tamano: null, gama: null, tuberia: "0-3", desinstalacion: "no", bombaCondensados: "no" };
+const state = {
+  tipo: null,
+  clienteTieneEquipo: null,
+  cantidadEquiposCliente: 1,
+  tamano: null,
+  gama: null,
+  tuberia: "0-3",
+  desinstalacion: "no",
+  bombaCondensados: "no"
+};
 
 const $ = id => document.getElementById(id);
 
@@ -388,12 +437,24 @@ function wireOptGroup(containerId, onSelect){
 
 wireOptGroup('tipoInstalacion', (val)=>{
   state.tipo = val;
+  state.clienteTieneEquipo = null;
   state.tamano = null;
   state.gama = null;
+  selectOpt($('clienteTieneEquipo'), null);
+  $('cardClienteTieneEquipo').style.display = 'block';
+  $('cardCantidadEquiposCliente').style.display = 'none';
   updateVisibleCards();
-  populateTamano();
+  recalc();
+});
+
+wireOptGroup('clienteTieneEquipo', (val)=>{
+  state.clienteTieneEquipo = val;
+  state.tamano = null;
+  state.gama = null;
+  $('cardCantidadEquiposCliente').style.display = (val === 'si' && state.tipo === 'split') ? 'block' : 'none';
+  updateVisibleCards();
+  populateTamanoIfNeeded();
   populateGama();
-  populateTuberiaOptions();
   recalc();
 });
 
@@ -401,105 +462,119 @@ wireOptGroup('desinstalacion', (val)=>{ state.desinstalacion = val; recalc(); })
 wireOptGroup('bombaCondensados', (val)=>{ state.bombaCondensados = val; recalc(); });
 
 $('tamano').addEventListener('change', (e)=>{ state.tamano = e.target.value || null; state.gama = null; populateGama(); recalc(); });
-$('tuberia').addEventListener('change', (e)=>{ state.tuberia = e.target.value; recalc(); });
+$('cantidadEquiposCliente').addEventListener('change', (e)=>{ state.cantidadEquiposCliente = parseInt(e.target.value); recalc(); });
+$('tuberia').addEventListener('change', (e)=>{
+  state.tuberia = e.target.value;
+  updateTuberiaHint();
+  recalc();
+});
 
-function updateVisibleCards(){
-  $('cardTamano').style.display = (state.tipo === 'split' || state.tipo === 'conductos') ? 'block' : 'none';
-  $('cardConductosAviso').style.display = state.tipo === 'conductos' ? 'block' : 'none';
-  $('cardGama').style.display = (state.tipo === 'split' || state.tipo === '2x1') ? 'block' : 'none';
+function updateTuberiaHint(){
+  const rate = state.tipo === 'conductos' ? TARIFAS.tuberiaExtraPorTramo.conductos : TARIFAS.tuberiaExtraPorTramo.default;
+  const isWarn = state.tuberia === '21-24';
+  $('tuberiaHint').classList.toggle('warn', isWarn);
+  $('tuberiaHint').textContent = isWarn
+    ? 'A partir de ~25 m puede superar el límite del equipo residencial y requerir un equipo reforzado (presupuesto aparte).'
+    : `Cada 3 m adicionales a partir de los 3 m base suman +${rate} €`;
 }
 
-function populateTamano(){
+function updateVisibleCards(){
+  const necesitaEquipo = state.clienteTieneEquipo === 'no';
+  $('cardTamano').style.display = (necesitaEquipo && state.tipo === 'split') ? 'block' : 'none';
+  $('cardConductosAviso').style.display = state.tipo === 'conductos' ? 'block' : 'none';
+  $('cardGama').style.display = necesitaEquipo ? 'block' : 'none';
+  $('gamaTitle').textContent = state.tipo === 'conductos' ? 'Equipo (Kosner, por potencia)' : 'Equipo';
+  updateTuberiaHint();
+}
+
+function populateTamanoIfNeeded(){
   const sel = $('tamano');
   sel.innerHTML = '';
-  if(state.tipo !== 'split' && state.tipo !== 'conductos'){
+  if(state.tipo !== 'split' || state.clienteTieneEquipo !== 'no'){
     sel.innerHTML = '<option value="">—</option>';
     return;
   }
-  const tamanos = TARIFAS[state.tipo].tamanos;
+  const tamanos = TARIFAS.split.tamanos;
   sel.innerHTML = '<option value="">Selecciona una opción</option>' +
     Object.keys(tamanos).map(t=>`<option value="${t}">${t}</option>`).join('');
 }
 
+function getGamaSource(){
+  if(state.clienteTieneEquipo !== 'no') return null;
+  if(state.tipo === 'split'){
+    if(!state.tamano) return null;
+    return TARIFAS.split.tamanos[state.tamano];
+  }
+  if(state.tipo === 'multisplit') return TARIFAS.multisplit.gamas;
+  if(state.tipo === 'conductos') return TARIFAS.conductos.potencias;
+  return null;
+}
+
 function populateGama(){
   const wrap = $('gama');
-  if(state.tipo === '2x1'){
-    const source = TARIFAS['2x1'].gamas;
-    wrap.innerHTML = GAMA_ORDEN.map(g=>{
-      const d = source[g];
-      return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
-    }).join('');
-    wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
-  } else if(state.tipo === 'split'){
-    if(!state.tamano){ wrap.innerHTML = ''; return; }
-    const source = TARIFAS.split.tamanos[state.tamano];
-    wrap.innerHTML = GAMA_ORDEN.map(g=>{
-      const d = source[g];
-      return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
-    }).join('');
-    wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
-  } else {
+  const source = getGamaSource();
+  if(!source){
     wrap.innerHTML = '';
+    return;
   }
-}
-
-function populateTuberiaOptions(){
-  const sel = $('tuberia');
-  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
-  sel.innerHTML = TARIFAS.tuberiaTramos.map((tramo, i)=>{
-    const extra = i * incremento;
-    const label = i === 0 ? `Hasta 3 m (instalación base)` : `${tramo} m (+${extra} €)`;
-    return `<option value="${tramo}">${label}</option>`;
+  const orden = state.tipo === 'conductos' ? POTENCIA_ORDEN : GAMA_ORDEN;
+  wrap.innerHTML = orden.map(g=>{
+    const d = source[g];
+    return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
   }).join('');
-  state.tuberia = "0-3";
-  updateTuberiaHint();
+  wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
 }
-
-function updateTuberiaHint(){
-  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
-  const isMax = state.tuberia === '21-24';
-  $('tuberiaHint').classList.toggle('warn', isMax);
-  $('tuberiaHint').textContent = isMax
-    ? 'A partir de ~25 m puede superar el límite del equipo residencial y requerir un equipo reforzado (presupuesto aparte).'
-    : `Cada 3 m adicionales a partir de los 3 m base suman +${incremento} €`;
-}
-
-$('tuberia').addEventListener('change', updateTuberiaHint);
 
 function eur(n){
   return n.toLocaleString('es-ES', {maximumFractionDigits:0}) + ' €';
 }
 
-function isReady(){
-  if(!state.tipo) return false;
-  if(state.tipo === 'split') return !!state.tamano && !!state.gama;
-  if(state.tipo === '2x1') return !!state.gama;
-  if(state.tipo === 'conductos') return !!state.tamano;
-  return false;
+function getUnidadesEfectivas(){
+  if(state.clienteTieneEquipo === 'si'){
+    if(state.tipo === 'split') return state.cantidadEquiposCliente;
+    if(state.tipo === 'multisplit') return TARIFAS.multisplit.unidades;
+    return TARIFAS.conductos.unidades;
+  }
+  if(state.tipo === 'split') return TARIFAS.split.unidades;
+  if(state.tipo === 'multisplit') return TARIFAS.multisplit.unidades;
+  return TARIFAS.conductos.unidades;
 }
 
-function getItemYBase(){
-  if(state.tipo === 'split'){
-    return { item: TARIFAS.split.tamanos[state.tamano][state.gama], base: TARIFAS.split.instalacionBase, unidades: TARIFAS.split.unidades };
+function getInstalacionBase(){
+  const unidades = getUnidadesEfectivas();
+  if(state.tipo === 'split') return TARIFAS.split.instalacionBase * unidades;
+  if(state.tipo === 'multisplit') return TARIFAS.multisplit.instalacionBase; // flat, compresor compartido
+  if(state.tipo === 'conductos') return TARIFAS.conductos.instalacionBase; // flat
+  return 0;
+}
+
+function isReady(){
+  if(!state.tipo || !state.clienteTieneEquipo) return false;
+  if(state.clienteTieneEquipo === 'si'){
+    if(state.tipo === 'split') return !!state.cantidadEquiposCliente;
+    return true;
   }
-  if(state.tipo === '2x1'){
-    return { item: TARIFAS['2x1'].gamas[state.gama], base: TARIFAS['2x1'].instalacionBase, unidades: TARIFAS['2x1'].unidades };
-  }
-  if(state.tipo === 'conductos'){
-    return { item: TARIFAS.conductos.tamanos[state.tamano], base: TARIFAS.conductos.instalacionBase, unidades: TARIFAS.conductos.unidades };
-  }
-  return null;
+  if(state.tipo === 'split') return !!state.tamano && !!state.gama;
+  return !!state.gama;
 }
 
 function computeLines(){
-  const incremento = TARIFAS.tuberiaIncremento[state.tipo] || 50;
+  const rate = state.tipo === 'conductos' ? TARIFAS.tuberiaExtraPorTramo.conductos : TARIFAS.tuberiaExtraPorTramo.default;
   const tramoIndex = TARIFAS.tuberiaTramos.indexOf(state.tuberia);
-  const tubExtra = tramoIndex * incremento;
-  const { item, base, unidades } = getItemYBase();
+  const tuberiaExtra = tramoIndex * rate;
+  const unidades = getUnidadesEfectivas();
+  const instalacion = getInstalacionBase();
   const lines = [];
 
-  lines.push({ label: `Equipo ${item.marca}`, value: item.equipo });
-  lines.push({ label: 'Instalación base', value: base });
+  if(state.clienteTieneEquipo === 'si'){
+    lines.push({ label: 'Equipo aportado por el cliente', value: 0 });
+  } else {
+    const source = getGamaSource();
+    const item = source[state.gama];
+    lines.push({ label: `Equipo ${item.marca}`, value: item.equipo });
+  }
+
+  lines.push({ label: 'Instalación base', value: instalacion });
 
   if(state.desinstalacion === 'si'){
     const extra = state.tipo === 'conductos' ? TARIFAS.desinstalacion.conductosFlat : TARIFAS.desinstalacion.perUnit * unidades;
@@ -508,7 +583,10 @@ function computeLines(){
   if(state.bombaCondensados === 'si'){
     lines.push({ label: 'Bomba de condensados', value: TARIFAS.bombaCondensados.extra });
   }
-  if(tubExtra > 0) lines.push({ label: `Recorrido de tubería (${state.tuberia} m)`, value: tubExtra });
+  if(tuberiaExtra > 0){
+    const tramoLabel = TARIFAS.tuberiaTramos[tramoIndex];
+    lines.push({ label: `Recorrido de tubería (${tramoLabel} m)`, value: tuberiaExtra });
+  }
 
   return lines;
 }
@@ -518,13 +596,14 @@ function recalc(){
   const btnWa = $('btnWhatsapp');
   const btnEmail = $('btnEmail');
   const btnCopy = $('btnCopy');
+  const btnPdf = $('btnPdf');
 
   if(!isReady()){
     lineWrap.innerHTML = '<div class="line-item empty"><span>Completa los pasos anteriores</span><span>—</span></div>';
     $('totalConIva').textContent = '0 €';
     $('stickyTotal').textContent = '0 €';
     $('totalSinIva').textContent = 'Base: — · IVA (21%): —';
-    btnWa.disabled = btnEmail.disabled = btnCopy.disabled = true;
+    btnWa.disabled = btnEmail.disabled = btnCopy.disabled = btnPdf.disabled = true;
     return;
   }
 
@@ -541,10 +620,10 @@ function recalc(){
   $('stickyTotal').textContent = eur(Math.round(total));
   $('totalSinIva').textContent = `Base: ${eur(Math.round(base))} · IVA (21%): ${eur(Math.round(iva))}`;
 
-  btnWa.disabled = btnEmail.disabled = btnCopy.disabled = false;
+  btnWa.disabled = btnEmail.disabled = btnCopy.disabled = btnPdf.disabled = false;
 }
 
-function buildMessage(){
+function getResumen(){
   const cliente = $('cliente').value.trim() || 'Cliente';
   const direccion = $('direccion').value.trim();
   const notas = $('notas').value.trim();
@@ -552,53 +631,36 @@ function buildMessage(){
   const base = lines.reduce((s,l)=>s+l.value, 0);
   const iva = base * TARIFAS.IVA;
   const total = base + iva;
-
-  const tipoLabel = TARIFAS[state.tipo].label + (state.tamano ? ` — ${state.tamano}` : '');
-
-  let msg = `PRESUPUESTO — GRUPO VÉRTEX\n\n`;
-  msg += `Cliente: ${cliente}\n`;
-  if(direccion) msg += `Dirección: ${direccion}\n`;
-  msg += `Instalación: ${tipoLabel}\n\n`;
-  msg += lines.map(l=>`${l.label}: ${eur(l.value)}`).join('\n') + '\n\n';
-  msg += `Base imponible: ${eur(Math.round(base))}\n`;
-  msg += `IVA (21%): ${eur(Math.round(iva))}\n`;
-  msg += `TOTAL: ${eur(Math.round(total))}\n`;
-  if(notas) msg += `\nNotas: ${notas}\n`;
-  msg += `\nPresupuesto orientativo sujeto a visita técnica de confirmación.`;
-  return msg;
+  const tipoLabel = state.tipo === 'multisplit' ? TARIFAS.multisplit.label
+    : state.tipo === 'conductos' ? TARIFAS.conductos.label
+    : TARIFAS.split.label + (state.tamano ? ` — ${state.tamano}` : '');
+  return { cliente, direccion, notas, lines, base, iva, total, tipoLabel };
 }
 
-function downloadPDF(){
-  try{
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const cliente = $('cliente').value.trim() || 'Cliente';
-    const msg = buildMessage();
-    doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
-    doc.text('PRESUPUESTO — GRUPO VÉRTEX', 14, 18);
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(10.5);
-    const bodyLines = msg.split('\n').slice(2); // quitamos el título repetido y línea en blanco
-    const wrapped = doc.splitTextToSize(bodyLines.join('\n'), 180);
-    doc.text(wrapped, 14, 30);
-    doc.save(`presupuesto-${cliente.replace(/[^a-z0-9]+/gi,'_')}.pdf`);
-  } catch(err){
-    console.error('No se pudo generar el PDF', err);
-  }
+function buildMessage(){
+  const r = getResumen();
+  let msg = `PRESUPUESTO — GRUPO VÉRTEX\n\n`;
+  msg += `Cliente: ${r.cliente}\n`;
+  if(r.direccion) msg += `Dirección: ${r.direccion}\n`;
+  msg += `Instalación: ${r.tipoLabel}\n\n`;
+  msg += r.lines.map(l=>`${l.label}: ${eur(l.value)}`).join('\n') + '\n\n';
+  msg += `Base imponible: ${eur(Math.round(r.base))}\n`;
+  msg += `IVA (21%): ${eur(Math.round(r.iva))}\n`;
+  msg += `TOTAL: ${eur(Math.round(r.total))}\n`;
+  if(r.notas) msg += `\nNotas: ${r.notas}\n`;
+  msg += `\nPresupuesto orientativo sujeto a visita técnica de confirmación.`;
+  return msg;
 }
 
 $('btnWhatsapp').addEventListener('click', ()=>{
   const msg = buildMessage();
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  downloadPDF();
 });
 
 $('btnEmail').addEventListener('click', ()=>{
   const msg = buildMessage();
   const subject = `Presupuesto Grupo Vértex — ${$('cliente').value.trim() || 'Cliente'}`;
   window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
-  downloadPDF();
 });
 
 $('btnCopy').addEventListener('click', (e)=>{
@@ -610,12 +672,78 @@ $('btnCopy').addEventListener('click', (e)=>{
   });
 });
 
+$('btnPdf').addEventListener('click', ()=>{
+  const r = getResumen();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('GRUPO VÉRTEX', 14, y);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  y += 7;
+  doc.text('Presupuesto de instalación de climatización', 14, y);
+  y += 12;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Cliente: ${r.cliente}`, 14, y);
+  y += 6;
+  if(r.direccion){ doc.setFont('helvetica','normal'); doc.text(`Dirección: ${r.direccion}`, 14, y); y += 6; }
+  doc.setFont('helvetica','normal');
+  doc.text(`Instalación: ${r.tipoLabel}`, 14, y);
+  y += 10;
+
+  doc.setDrawColor(220,220,220);
+  doc.line(14, y, 196, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Concepto', 14, y);
+  doc.text('Importe', 180, y, { align: 'right' });
+  y += 4;
+  doc.line(14, y, 196, y);
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+
+  r.lines.forEach(l=>{
+    doc.text(l.label, 14, y);
+    doc.text(eur(l.value), 180, y, { align: 'right' });
+    y += 7;
+  });
+
+  y += 4;
+  doc.line(14, y, 196, y);
+  y += 8;
+
+  doc.text(`Base imponible`, 14, y); doc.text(eur(Math.round(r.base)), 180, y, {align:'right'}); y += 7;
+  doc.text(`IVA (21%)`, 14, y); doc.text(eur(Math.round(r.iva)), 180, y, {align:'right'}); y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('TOTAL', 14, y);
+  doc.text(eur(Math.round(r.total)), 180, y, { align: 'right' });
+  y += 12;
+
+  if(r.notas){
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const notasLines = doc.splitTextToSize(`Notas: ${r.notas}`, 182);
+    doc.text(notasLines, 14, y);
+    y += notasLines.length * 5 + 4;
+  }
+
+  doc.setFontSize(9);
+  doc.setTextColor(120,120,120);
+  doc.text('Presupuesto orientativo sujeto a visita técnica de confirmación.', 14, y + 6);
+
+  const nombreArchivo = `presupuesto-vertex-${r.cliente.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}.pdf`;
+  doc.save(nombreArchivo);
+});
+
 selectOpt($('desinstalacion'), 'no');
 selectOpt($('bombaCondensados'), 'no');
-updateVisibleCards();
-populateTamano();
-populateGama();
-populateTuberiaOptions();
 recalc();
 </script>
 
