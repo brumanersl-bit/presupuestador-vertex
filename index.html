@@ -163,6 +163,7 @@
   }
   .line-item span:last-child{ font-family:'Space Grotesk',sans-serif; font-weight:600; }
   .line-item.empty{ color: rgba(255,255,255,0.35); font-style: italic; }
+  .line-item.discount span:last-child{ color:#7CD9A8; }
   .total-row{
     display:flex; justify-content:space-between; align-items:flex-end;
     margin-top: 14px; padding-top: 12px; border-top: 1.5px solid rgba(255,255,255,0.2);
@@ -267,6 +268,12 @@
   <div class="card" id="cardGama" style="display:none;">
     <h2><span class="step-dot">5</span> <span id="gamaTitle">Equipo</span></h2>
     <div class="opt-grid cols-3" id="gama"></div>
+    <div id="personalizadaFields" style="display:none; margin-top:6px;">
+      <label for="personalizadaMarca">Modelo del equipo</label>
+      <input type="text" id="personalizadaMarca" placeholder="Ej. Daikin FTXM50R">
+      <label for="personalizadaPrecio">Precio del equipo, sin IVA (€)</label>
+      <input type="text" inputmode="decimal" id="personalizadaPrecio" placeholder="Ej. 850">
+    </div>
   </div>
 
   <div class="card">
@@ -299,7 +306,18 @@
   </div>
 
   <div class="card">
-    <h2><span class="step-dot">8</span> Notas para el cliente (opcional)</h2>
+    <h2><span class="step-dot">8</span> Descuento (opcional)</h2>
+    <div class="opt-grid cols-2" id="descuentoTipo">
+      <div class="opt" data-value="eur">€ importe fijo</div>
+      <div class="opt" data-value="pct">% porcentaje</div>
+    </div>
+    <label for="descuentoValor">Cantidad de descuento</label>
+    <input type="text" inputmode="decimal" id="descuentoValor" placeholder="Ej. 50">
+    <div class="hint">Se aplica sobre la base, antes de calcular el IVA.</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step-dot">9</span> Notas para el cliente (opcional)</h2>
     <textarea id="notas" placeholder="Ej. Plazo de instalación: 3-5 días."></textarea>
   </div>
 
@@ -414,10 +432,17 @@ const state = {
   gama: null,
   tuberia: "0-3",
   desinstalacion: "no",
-  bombaCondensados: "no"
+  bombaCondensados: "no",
+  descuentoTipo: "eur"
 };
 
 const $ = id => document.getElementById(id);
+
+function parseNum(str){
+  if(!str) return 0;
+  const n = parseFloat(String(str).trim().replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
 
 function selectOpt(container, value){
   container.querySelectorAll('.opt').forEach(el=>{
@@ -460,6 +485,10 @@ wireOptGroup('clienteTieneEquipo', (val)=>{
 
 wireOptGroup('desinstalacion', (val)=>{ state.desinstalacion = val; recalc(); });
 wireOptGroup('bombaCondensados', (val)=>{ state.bombaCondensados = val; recalc(); });
+wireOptGroup('descuentoTipo', (val)=>{ state.descuentoTipo = val; recalc(); });
+$('descuentoValor').addEventListener('input', recalc);
+$('personalizadaMarca').addEventListener('input', recalc);
+$('personalizadaPrecio').addEventListener('input', recalc);
 
 $('tamano').addEventListener('change', (e)=>{ state.tamano = e.target.value || null; state.gama = null; populateGama(); recalc(); });
 $('cantidadEquiposCliente').addEventListener('change', (e)=>{ state.cantidadEquiposCliente = parseInt(e.target.value); recalc(); });
@@ -521,8 +550,12 @@ function populateGama(){
   wrap.innerHTML = orden.map(g=>{
     const d = source[g];
     return `<div class="opt" data-value="${g}">${d.marca}<small>${eur(d.equipo)} · equipo</small></div>`;
-  }).join('');
-  wireOptGroup('gama', (val)=>{ state.gama = val; recalc(); });
+  }).join('') + `<div class="opt" data-value="personalizada">Otro / a medida<small>Modelo y precio manual</small></div>`;
+  wireOptGroup('gama', (val)=>{
+    state.gama = val;
+    $('personalizadaFields').style.display = (val === 'personalizada') ? 'block' : 'none';
+    recalc();
+  });
 }
 
 function eur(n){
@@ -554,8 +587,14 @@ function isReady(){
     if(state.tipo === 'split') return !!state.cantidadEquiposCliente;
     return true;
   }
-  if(state.tipo === 'split') return !!state.tamano && !!state.gama;
-  return !!state.gama;
+  if(state.tipo === 'split' && !state.tamano) return false;
+  if(!state.gama) return false;
+  if(state.gama === 'personalizada'){
+    const marcaOk = $('personalizadaMarca').value.trim().length > 0;
+    const precioOk = parseNum($('personalizadaPrecio').value) > 0;
+    return marcaOk && precioOk;
+  }
+  return true;
 }
 
 function computeLines(){
@@ -568,6 +607,10 @@ function computeLines(){
 
   if(state.clienteTieneEquipo === 'si'){
     lines.push({ label: 'Equipo aportado por el cliente', value: 0 });
+  } else if(state.gama === 'personalizada'){
+    const marca = $('personalizadaMarca').value.trim() || 'Equipo a medida';
+    const precio = parseNum($('personalizadaPrecio').value);
+    lines.push({ label: `Equipo ${marca} (a medida)`, value: precio });
   } else {
     const source = getGamaSource();
     const item = source[state.gama];
@@ -586,6 +629,16 @@ function computeLines(){
   if(tuberiaExtra > 0){
     const tramoLabel = TARIFAS.tuberiaTramos[tramoIndex];
     lines.push({ label: `Recorrido de tubería (${tramoLabel} m)`, value: tuberiaExtra });
+  }
+
+  const descuentoValor = parseNum($('descuentoValor').value);
+  if(descuentoValor > 0){
+    const subtotalPreDescuento = lines.reduce((s,l)=>s+l.value, 0);
+    const importeDescuento = state.descuentoTipo === 'pct'
+      ? subtotalPreDescuento * (descuentoValor / 100)
+      : descuentoValor;
+    const etiqueta = state.descuentoTipo === 'pct' ? `Descuento (${descuentoValor}%)` : `Descuento`;
+    lines.push({ label: etiqueta, value: -importeDescuento });
   }
 
   return lines;
@@ -613,7 +666,7 @@ function recalc(){
   const total = base + iva;
 
   lineWrap.innerHTML = lines.map(l=>
-    `<div class="line-item"><span>${l.label}</span><span>${eur(l.value)}</span></div>`
+    `<div class="line-item${l.value < 0 ? ' discount' : ''}"><span>${l.label}</span><span>${eur(l.value)}</span></div>`
   ).join('');
 
   $('totalConIva').textContent = eur(Math.round(total));
@@ -659,93 +712,4 @@ $('btnWhatsapp').addEventListener('click', ()=>{
 
 $('btnEmail').addEventListener('click', ()=>{
   const msg = buildMessage();
-  const subject = `Presupuesto Grupo Vértex — ${$('cliente').value.trim() || 'Cliente'}`;
-  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
-});
-
-$('btnCopy').addEventListener('click', (e)=>{
-  const msg = buildMessage();
-  navigator.clipboard.writeText(msg).then(()=>{
-    const original = e.target.textContent;
-    e.target.textContent = '✓ Copiado';
-    setTimeout(()=>{ e.target.textContent = original; }, 1500);
-  });
-});
-
-$('btnPdf').addEventListener('click', ()=>{
-  const r = getResumen();
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let y = 20;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text('GRUPO VÉRTEX', 14, y);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  y += 7;
-  doc.text('Presupuesto de instalación de climatización', 14, y);
-  y += 12;
-
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Cliente: ${r.cliente}`, 14, y);
-  y += 6;
-  if(r.direccion){ doc.setFont('helvetica','normal'); doc.text(`Dirección: ${r.direccion}`, 14, y); y += 6; }
-  doc.setFont('helvetica','normal');
-  doc.text(`Instalación: ${r.tipoLabel}`, 14, y);
-  y += 10;
-
-  doc.setDrawColor(220,220,220);
-  doc.line(14, y, 196, y);
-  y += 8;
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('Concepto', 14, y);
-  doc.text('Importe', 180, y, { align: 'right' });
-  y += 4;
-  doc.line(14, y, 196, y);
-  y += 6;
-  doc.setFont('helvetica', 'normal');
-
-  r.lines.forEach(l=>{
-    doc.text(l.label, 14, y);
-    doc.text(eur(l.value), 180, y, { align: 'right' });
-    y += 7;
-  });
-
-  y += 4;
-  doc.line(14, y, 196, y);
-  y += 8;
-
-  doc.text(`Base imponible`, 14, y); doc.text(eur(Math.round(r.base)), 180, y, {align:'right'}); y += 7;
-  doc.text(`IVA (21%)`, 14, y); doc.text(eur(Math.round(r.iva)), 180, y, {align:'right'}); y += 8;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text('TOTAL', 14, y);
-  doc.text(eur(Math.round(r.total)), 180, y, { align: 'right' });
-  y += 12;
-
-  if(r.notas){
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    const notasLines = doc.splitTextToSize(`Notas: ${r.notas}`, 182);
-    doc.text(notasLines, 14, y);
-    y += notasLines.length * 5 + 4;
-  }
-
-  doc.setFontSize(9);
-  doc.setTextColor(120,120,120);
-  doc.text('Presupuesto orientativo sujeto a visita técnica de confirmación.', 14, y + 6);
-
-  const nombreArchivo = `presupuesto-vertex-${r.cliente.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}.pdf`;
-  doc.save(nombreArchivo);
-});
-
-selectOpt($('desinstalacion'), 'no');
-selectOpt($('bombaCondensados'), 'no');
-recalc();
-</script>
-
-</body>
-</html>
+  const subject = `Presupuesto Grupo Vértex — ${$('c
