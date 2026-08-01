@@ -712,4 +712,94 @@ $('btnWhatsapp').addEventListener('click', ()=>{
 
 $('btnEmail').addEventListener('click', ()=>{
   const msg = buildMessage();
-  const subject = `Presupuesto Grupo Vértex — ${$('c
+  const subject = `Presupuesto Grupo Vértex — ${$('cliente').value.trim() || 'Cliente'}`;
+  window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
+});
+
+$('btnCopy').addEventListener('click', (e)=>{
+  const msg = buildMessage();
+  navigator.clipboard.writeText(msg).then(()=>{
+    const original = e.target.textContent;
+    e.target.textContent = '✓ Copiado';
+    setTimeout(()=>{ e.target.textContent = original; }, 1500);
+  });
+});
+
+$('btnPdf').addEventListener('click', ()=>{
+  const r = getResumen();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('GRUPO VÉRTEX', 14, y);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  y += 7;
+  doc.text('Presupuesto de instalación de climatización', 14, y);
+  y += 12;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Cliente: ${r.cliente}`, 14, y);
+  y += 6;
+  if(r.direccion){ doc.setFont('helvetica','normal'); doc.text(`Dirección: ${r.direccion}`, 14, y); y += 6; }
+  doc.setFont('helvetica','normal');
+  doc.text(`Instalación: ${r.tipoLabel}`, 14, y);
+  y += 10;
+
+  doc.setDrawColor(220,220,220);
+  doc.line(14, y, 196, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Concepto', 14, y);
+  doc.text('Importe', 180, y, { align: 'right' });
+  y += 4;
+  doc.line(14, y, 196, y);
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+
+  r.lines.forEach(l=>{
+    doc.text(l.label, 14, y);
+    doc.text(eur(l.value), 180, y, { align: 'right' });
+    y += 7;
+  });
+
+  y += 4;
+  doc.line(14, y, 196, y);
+  y += 8;
+
+  doc.text(`Base imponible`, 14, y); doc.text(eur(Math.round(r.base)), 180, y, {align:'right'}); y += 7;
+  doc.text(`IVA (21%)`, 14, y); doc.text(eur(Math.round(r.iva)), 180, y, {align:'right'}); y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('TOTAL', 14, y);
+  doc.text(eur(Math.round(r.total)), 180, y, { align: 'right' });
+  y += 12;
+
+  if(r.notas){
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const notasLines = doc.splitTextToSize(`Notas: ${r.notas}`, 182);
+    doc.text(notasLines, 14, y);
+    y += notasLines.length * 5 + 4;
+  }
+
+  doc.setFontSize(9);
+  doc.setTextColor(120,120,120);
+  doc.text('Presupuesto orientativo sujeto a visita técnica de confirmación.', 14, y + 6);
+
+  const nombreArchivo = `presupuesto-vertex-${r.cliente.replace(/[^a-z0-9]+/gi,'-').toLowerCase()}.pdf`;
+  doc.save(nombreArchivo);
+});
+
+selectOpt($('desinstalacion'), 'no');
+selectOpt($('bombaCondensados'), 'no');
+selectOpt($('descuentoTipo'), 'eur');
+recalc();
+</script>
+
+</body>
+</html>
