@@ -373,12 +373,12 @@
 const TARIFAS = {
   split: {
     label: "Split individual",
-    instalacionBase: 250,
+    instalacionBase: 325,
     unidades: 1,
     tamanos: {
       "3000 frigorías (hasta ~30 m²)": {
-        economica: { equipo: 215,   marca: "ELUXE Amber 2 3000 fg" },
-        estandar:  { equipo: 394.9, marca: "Kosner Nova Evo KSTI 12N/35" },
+        economica: { equipo: 249,   marca: "ELUXE Amber 2 3000 fg" },
+        estandar:  { equipo: 375.9, marca: "Kosner Nova Evo KSTI 12N/35" },
         premium:   { equipo: 590,   marca: "Mitsubishi Electric MSZ-HR35VFK" }
       },
       "4500 frigorías (hasta ~45-50 m²)": {
@@ -412,10 +412,10 @@ const TARIFAS = {
   // Recorrido de tubería: instalación base = hasta 3 m. Extra por cada 3 m adicionales.
   // Ductos tiene una tarifa distinta (más cara) al resto de instalaciones.
   tuberiaTramos: ["0-3","3-6","6-9","9-12","12-15","15-18","18-21","21-24"],
-  tuberiaExtraPorTramo: { default: 50, conductos: 80 },
+  tuberiaExtraPorTramo: { default: 60, conductos: 100 },
   desinstalacion: {
     perUnit: 70,
-    conductosFlat: 180
+    conductosFlat: 300
   },
   bombaCondensados: { extra: 100 },
   IVA: 0.21
